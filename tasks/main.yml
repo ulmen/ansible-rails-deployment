@@ -1,28 +1,8 @@
----
-# note: mostly for convenience when ssh'ing to your server.
-- name: add GEM_HOME to .bashrc
-  lineinfile:
-    dest: "{{ home_directory }}/.bashrc"
-    insertafter: BOF
-    regexp: ^export.GEM_HOME
-    line: "export GEM_HOME={{ gem_home }}"
-    state: present
-
-- name: update PATH with $GEM_HOME/bin
-  lineinfile:
-    dest: "{{ home_directory }}/.bashrc"
-    insertafter: BOF
-    regexp: ^export.PATH=.GEM_HOME
-    line: "export PATH=$GEM_HOME/bin:$PATH"
-    state: present
-
-- name: execute bundler
+- name: bundle install
   command: chdir="{{ build_path }}" bundle install --path='{{ shared_path }}/vendor/bundle' --gemfile='./Gemfile' --deployment --binstubs='./bin'
   register: bundler
   changed_when: "'Installing' in bundler or 'Updating' in bundler or 'upgrade' in bundler"
   environment:
-    GEM_HOME: "{{ gem_home }}"
-    PATH: "{{ gem_home }}/bin:{{ rails_bin_paths | union([ansible_env.PATH]) | join(':') }}"
     RAILS_ENV: "{{ rails_env }}"
 
 - name: check schema for diffs
@@ -35,8 +15,6 @@
   command: chdir="{{ build_path }}" bundle exec rake db:migrate
   environment:
     RAILS_ENV: "{{ rails_env }}"
-    PATH: "{{ gem_home }}/bin:{{ rails_bin_paths | union([ansible_env.PATH]) | join(':') }}"
-    GEM_HOME: "{{ gem_home }}"
   when: migrate and (force_migrate or rails_schema|changed)
 
 - name: check assets for diffs
@@ -49,10 +27,4 @@
   command: chdir="{{ build_path }}" bundle exec rake assets:precompile
   environment:
     RAILS_ENV: "{{ rails_env }}"
-    PATH: "{{ gem_home }}/bin:{{ rails_bin_paths | union([ansible_env.PATH]) | join(':') }}"
-    GEM_HOME: "{{ gem_home }}"
   when: compile_assets and (assets|changed or force_asset_compilation)
-
-- name: copy asset files when not changed
-  shell: "cp -R {{ current_path }}/public/assets {{ build_path }}/public/assets"
-  when: compile_assets and assets is defined and not assets.changed
