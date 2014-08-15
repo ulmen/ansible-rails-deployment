@@ -17,14 +17,15 @@
     RAILS_ENV: "{{ rails_env }}"
   when: migrate and (force_migrate or rails_schema|changed)
 
-- name: check assets for diffs
-  diff:
-    paths: "{{ asset_precompile_diff_paths }}"
-  when: compile_assets
-  register: assets
+#- name: check assets for diffs
+  #diff:
+    #paths: "{{ asset_precompile_diff_paths }}"
+  #when: compile_assets
+  #register: assets
 
 - name: precompile asset files if necessary
   command: chdir="{{ build_path }}" bundle exec rake assets:precompile
   environment:
     RAILS_ENV: "{{ rails_env }}"
-  when: compile_assets and (assets|changed or force_asset_compilation)
+  when: compile_assets
+    #and (assets|changed or force_asset_compilation)
