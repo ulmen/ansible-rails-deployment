@@ -1,5 +1,5 @@
 - name: bundle install
-  command: chdir="{{ build_path }}" bundle install --path='{{ shared_path }}/vendor/bundle' --gemfile='./Gemfile' --deployment --binstubs='./bin'
+  command: chdir="{{ build_path }}" bundle install --path='{{ shared_path }}/vendor/bundle' --gemfile='./Gemfile' --without development test --deployment --binstubs='./bin'
   register: bundler
   changed_when: "'Installing' in bundler or 'Updating' in bundler or 'upgrade' in bundler"
   environment:
