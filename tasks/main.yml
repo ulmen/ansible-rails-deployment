@@ -5,17 +5,18 @@
   environment:
     RAILS_ENV: "{{ rails_env }}"
 
-- name: check schema for diffs
-  diff:
-    paths: "{{ migrate_diff_paths }}"
-  when: migrate
-  register: rails_schema
+#- name: check schema for diffs
+  #diff:
+    #paths: "{{ migrate_diff_paths }}"
+  #when: migrate
+  #register: rails_schema
 
 - name: migrate the database
   command: chdir="{{ build_path }}" bundle exec rake db:migrate
   environment:
     RAILS_ENV: "{{ rails_env }}"
-  when: migrate and (force_migrate or rails_schema|changed)
+  when: migrate
+    #and (force_migrate or rails_schema|changed)
 
 #- name: check assets for diffs
   #diff:
